@@ -52,12 +52,12 @@
   .grid-header h2 span{color:var(--text)}
   #software-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1.25rem}
 
-  .sw-card{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;
+  .sw-card{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:visible;
            transition:transform .25s,border-color .25s,box-shadow .25s;position:relative;animation:fadeUp .4s ease both}
   .sw-card:hover{transform:translateY(-4px);border-color:rgba(0,229,160,.3);box-shadow:0 12px 40px rgba(0,229,160,.08)}
   @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
   .card-thumb{width:100%;height:148px;background:linear-gradient(135deg,#1a1f2e,#0f1218);
-              display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative}
+              border-radius:14px 14px 0 0;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative}
   .card-thumb img{width:72px;height:72px;object-fit:contain;filter:drop-shadow(0 4px 16px rgba(0,0,0,.4));transition:transform .3s}
   .sw-card:hover .card-thumb img{transform:scale(1.08)}
   .card-thumb .thumb-placeholder{width:72px;height:72px;border-radius:18px;display:flex;align-items:center;
@@ -82,7 +82,7 @@
   .btn-download svg{width:14px;height:14px}
 
   /* Admin card buttons */
-  .card-admin-btns{position:absolute;top:.5rem;left:.5rem;display:none;gap:.35rem}
+  .card-admin-btns{position:absolute;top:-12px;left:-12px;display:none;gap:.35rem;z-index:10}
   body.admin-mode .card-admin-btns{display:flex}
   .card-del,.card-edit{border-radius:7px;width:28px;height:28px;display:flex;align-items:center;
                         justify-content:center;cursor:pointer;font-size:.8rem;transition:all .2s;border:none}
@@ -92,7 +92,7 @@
   .card-edit:hover{background:rgba(124,92,252,.3)}
   body.admin-mode .sw-card{border-color:rgba(124,92,252,.25)}
 
-  .skeleton{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;animation:pulse 1.5s ease infinite}
+  .skeleton{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:visible;animation:pulse 1.5s ease infinite}
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
   .skeleton-thumb{width:100%;height:148px;background:var(--border)}
   .skeleton-body{padding:1rem 1.1rem 1.1rem}
@@ -366,15 +366,19 @@
 
 <!-- SUCCESS MODAL -->
 <div class="modal-backdrop" id="successModal">
-  <div class="modal" style="max-width:380px">
+  <div class="modal" style="max-width:400px">
     <div class="success-modal">
       <div class="success-icon">✅</div>
       <h3>Payment Successful!</h3>
-      <p>Your payment has been confirmed. Your download will begin automatically. Thank you!</p>
-      <a id="dl-link" href="#" class="btn-dl-now" target="_blank">
+      <p id="success-msg">Your payment is confirmed. Download starts in <strong id="countdown">5</strong> seconds…</p>
+      <div style="width:100%;height:6px;background:var(--border);border-radius:3px;margin-bottom:1.25rem;overflow:hidden">
+        <div id="countdown-bar" style="height:100%;width:100%;background:var(--accent);border-radius:3px;transition:width 1s linear"></div>
+      </div>
+      <a id="dl-link" href="#" class="btn-dl-now" target="_blank" rel="noopener">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-        Download Now
+        <span id="dl-btn-text">Download Now</span>
       </a>
+      <p style="font-size:.72rem;color:var(--muted);margin-top:.75rem">If it does not start automatically, click Download Now.</p>
     </div>
   </div>
 </div>
@@ -578,24 +582,59 @@ function initiatePayment() {
   }).openIframe();
 }
 
+let countdownTimer = null;
+
 function onPaymentSuccess(response) {
   const url = currentSoftware.url;
   const dlLink = document.getElementById('dl-link');
+
   if (url && url !== '#') {
     dlLink.href = url;
-    // auto-trigger download
-    setTimeout(() => {
-      const a = document.createElement('a');
-      a.href = url; a.target = '_blank'; a.click();
-    }, 500);
   }
+
   openModal('successModal');
   showToast('Payment verified! Ref: ' + response.reference);
+
+  // Log sale
   db.collection('sales').add({
     softwareId: currentSoftware.id, softwareName: currentSoftware.name,
     amount: currentSoftware.price, ref: response.reference,
     timestamp: firebase.firestore.FieldValue.serverTimestamp()
   }).catch(()=>{});
+
+  // Countdown then open download
+  if (url && url !== '#') {
+    let secs = 5;
+    const countEl = document.getElementById('countdown');
+    const barEl = document.getElementById('countdown-bar');
+    const msgEl = document.getElementById('success-msg');
+    const btnEl = document.getElementById('dl-btn-text');
+
+    // Reset
+    if (countdownTimer) clearInterval(countdownTimer);
+    countEl.textContent = secs;
+    barEl.style.transition = 'none';
+    barEl.style.width = '100%';
+
+    setTimeout(() => {
+      barEl.style.transition = 'width 1s linear';
+      barEl.style.width = (((secs-1)/secs)*100) + '%';
+    }, 50);
+
+    countdownTimer = setInterval(() => {
+      secs--;
+      countEl.textContent = secs;
+      barEl.style.width = ((secs/5)*100) + '%';
+
+      if (secs <= 0) {
+        clearInterval(countdownTimer);
+        msgEl.innerHTML = '✅ Download is opening now…';
+        btnEl.textContent = 'Download Now';
+        // Open the download link
+        window.open(url, '_blank');
+      }
+    }, 1000);
+  }
 }
 
 // ═══════════════════════════════════════
