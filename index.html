@@ -366,15 +366,19 @@
 
 <!-- SUCCESS MODAL -->
 <div class="modal-backdrop" id="successModal">
-  <div class="modal" style="max-width:380px">
+  <div class="modal" style="max-width:400px">
     <div class="success-modal">
       <div class="success-icon">✅</div>
       <h3>Payment Successful!</h3>
-      <p>Your payment has been confirmed. Your download will begin automatically. Thank you!</p>
-      <a id="dl-link" href="#" class="btn-dl-now" target="_blank">
+      <p id="success-msg">Your payment is confirmed. Download starts in <strong id="countdown">5</strong> seconds…</p>
+      <div style="width:100%;height:6px;background:var(--border);border-radius:3px;margin-bottom:1.25rem;overflow:hidden">
+        <div id="countdown-bar" style="height:100%;width:100%;background:var(--accent);border-radius:3px;transition:width 1s linear"></div>
+      </div>
+      <a id="dl-link" href="#" class="btn-dl-now" target="_blank" rel="noopener">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-        Download Now
+        <span id="dl-btn-text">Download Now</span>
       </a>
+      <p style="font-size:.72rem;color:var(--muted);margin-top:.75rem">If it does not start automatically, click Download Now.</p>
     </div>
   </div>
 </div>
@@ -578,24 +582,59 @@ function initiatePayment() {
   }).openIframe();
 }
 
+let countdownTimer = null;
+
 function onPaymentSuccess(response) {
   const url = currentSoftware.url;
   const dlLink = document.getElementById('dl-link');
+
   if (url && url !== '#') {
     dlLink.href = url;
-    // auto-trigger download
-    setTimeout(() => {
-      const a = document.createElement('a');
-      a.href = url; a.target = '_blank'; a.click();
-    }, 500);
   }
+
   openModal('successModal');
   showToast('Payment verified! Ref: ' + response.reference);
+
+  // Log sale
   db.collection('sales').add({
     softwareId: currentSoftware.id, softwareName: currentSoftware.name,
     amount: currentSoftware.price, ref: response.reference,
     timestamp: firebase.firestore.FieldValue.serverTimestamp()
   }).catch(()=>{});
+
+  // Countdown then open download
+  if (url && url !== '#') {
+    let secs = 5;
+    const countEl = document.getElementById('countdown');
+    const barEl = document.getElementById('countdown-bar');
+    const msgEl = document.getElementById('success-msg');
+    const btnEl = document.getElementById('dl-btn-text');
+
+    // Reset
+    if (countdownTimer) clearInterval(countdownTimer);
+    countEl.textContent = secs;
+    barEl.style.transition = 'none';
+    barEl.style.width = '100%';
+
+    setTimeout(() => {
+      barEl.style.transition = 'width 1s linear';
+      barEl.style.width = (((secs-1)/secs)*100) + '%';
+    }, 50);
+
+    countdownTimer = setInterval(() => {
+      secs--;
+      countEl.textContent = secs;
+      barEl.style.width = ((secs/5)*100) + '%';
+
+      if (secs <= 0) {
+        clearInterval(countdownTimer);
+        msgEl.innerHTML = '✅ Download is opening now…';
+        btnEl.textContent = 'Download Now';
+        // Open the download link
+        window.open(url, '_blank');
+      }
+    }, 1000);
+  }
 }
 
 // ═══════════════════════════════════════
