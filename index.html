@@ -27,9 +27,7 @@
   .nav-logo{font-family:'Syne',sans-serif;font-size:1.35rem;font-weight:800;color:var(--accent);letter-spacing:-.02em}
   .nav-logo span{color:var(--text)}
   .nav-actions{display:flex;gap:.75rem;align-items:center}
-  .btn-admin{background:var(--accent2);color:#fff;border:none;padding:.45rem 1.1rem;border-radius:8px;
-             font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:500;cursor:pointer;transition:opacity .2s}
-  .btn-admin:hover{opacity:.85}
+  /* .btn-admin hidden intentionally */
   .nav-badge{background:rgba(0,229,160,.12);border:1px solid rgba(0,229,160,.3);color:var(--accent);
              font-size:.75rem;font-weight:500;padding:.3rem .7rem;border-radius:20px}
 
@@ -224,7 +222,7 @@
   <div class="nav-logo">Soft<span>Hub</span> GH</div>
   <div class="nav-actions">
     <span class="nav-badge">🇬🇭 GHC Store</span>
-    <button class="btn-admin" onclick="openAdminLogin()">Admin</button>
+    <!-- Admin button hidden — use Ctrl+Shift+A or yoursite.com/#admin -->
   </div>
 </nav>
 
@@ -641,9 +639,7 @@ function onPaymentSuccess(response) {
 // ADMIN
 // ═══════════════════════════════════════
 function openAdminLogin() {
-  if (isAdmin) { exitAdmin(); return; }
-  document.getElementById('admin-pass').value = '';
-  openModal('loginModal');
+  triggerAdminLogin();
 }
 function checkAdmin() {
   if (document.getElementById('admin-pass').value === ADMIN_PASSWORD) {
@@ -768,6 +764,35 @@ function closeModal(id) { document.getElementById(id).classList.remove('open'); 
 document.querySelectorAll('.modal-backdrop').forEach(m => {
   m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
 });
+
+// ═══════════════════════════════════════
+// SECRET ADMIN ACCESS
+// ═══════════════════════════════════════
+
+// Method 1: Ctrl + Shift + A
+document.addEventListener('keydown', function(e) {
+  if (e.ctrlKey && e.shiftKey && e.key === 'A') {
+    e.preventDefault();
+    if (isAdmin) { exitAdmin(); } else { triggerAdminLogin(); }
+  }
+});
+
+// Method 2: URL hash #admin
+function checkHashAdmin() {
+  if (window.location.hash === '#admin') {
+    triggerAdminLogin();
+    // Clean the URL so it's not visible
+    history.replaceState(null, '', window.location.pathname);
+  }
+}
+window.addEventListener('load', checkHashAdmin);
+window.addEventListener('hashchange', checkHashAdmin);
+
+function triggerAdminLogin() {
+  if (isAdmin) { exitAdmin(); return; }
+  document.getElementById('admin-pass').value = '';
+  openModal('loginModal');
+}
 
 let toastTimer;
 function showToast(msg, isError=false) {
