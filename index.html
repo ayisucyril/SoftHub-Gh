@@ -12,7 +12,7 @@
   :root {
     --bg:#0a0c10; --surface:#111318; --card:#161a22; --border:#222733;
     --accent:#00e5a0; --accent2:#7c5cfc; --text:#e8eaf0;
-    --muted:#6b7280; --danger:#ff4d4d; --gold:#ffd700;
+    --muted:#6b7280; --danger:#ff4d4d; --gold:#ffd700; --warn:#ff9500;
   }
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
   body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
@@ -21,7 +21,6 @@
                radial-gradient(ellipse 50% 50% at 10% 80%,rgba(0,229,160,.08) 0%,transparent 55%);
     pointer-events:none}
 
-  /* NAV */
   nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;
       padding:0 2rem;height:64px;background:rgba(10,12,16,.88);backdrop-filter:blur(16px);
       border-bottom:1px solid var(--border)}
@@ -34,7 +33,6 @@
   .nav-badge{background:rgba(0,229,160,.12);border:1px solid rgba(0,229,160,.3);color:var(--accent);
              font-size:.75rem;font-weight:500;padding:.3rem .7rem;border-radius:20px}
 
-  /* HERO */
   .hero{position:relative;z-index:1;text-align:center;padding:5rem 2rem 3rem}
   .hero-eyebrow{display:inline-block;font-size:.8rem;font-weight:500;letter-spacing:.12em;text-transform:uppercase;
                 color:var(--accent);background:rgba(0,229,160,.08);border:1px solid rgba(0,229,160,.2);
@@ -43,20 +41,17 @@
   .hero h1 em{font-style:normal;color:var(--accent)}
   .hero p{max-width:520px;margin:1rem auto 0;color:var(--muted);font-size:1.05rem;line-height:1.65}
 
-  /* FILTERS */
   .filters{position:relative;z-index:1;display:flex;gap:.5rem;flex-wrap:wrap;justify-content:center;padding:1.5rem 2rem 2rem}
   .filter-btn{background:var(--card);border:1px solid var(--border);color:var(--muted);padding:.4rem 1rem;
               border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.85rem;cursor:pointer;transition:all .2s}
   .filter-btn:hover,.filter-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(0,229,160,.07)}
 
-  /* GRID */
   main{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:0 1.5rem 5rem}
   .grid-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem}
   .grid-header h2{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:700;color:var(--muted)}
   .grid-header h2 span{color:var(--text)}
   #software-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1.25rem}
 
-  /* CARD */
   .sw-card{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;
            transition:transform .25s,border-color .25s,box-shadow .25s;position:relative;animation:fadeUp .4s ease both}
   .sw-card:hover{transform:translateY(-4px);border-color:rgba(0,229,160,.3);box-shadow:0 12px 40px rgba(0,229,160,.08)}
@@ -86,7 +81,17 @@
   .btn-download:hover{background:#00ffb3;box-shadow:0 4px 16px rgba(0,229,160,.35);transform:scale(1.03)}
   .btn-download svg{width:14px;height:14px}
 
-  /* SKELETON */
+  /* Admin card buttons */
+  .card-admin-btns{position:absolute;top:.5rem;left:.5rem;display:none;gap:.35rem}
+  body.admin-mode .card-admin-btns{display:flex}
+  .card-del,.card-edit{border-radius:7px;width:28px;height:28px;display:flex;align-items:center;
+                        justify-content:center;cursor:pointer;font-size:.8rem;transition:all .2s;border:none}
+  .card-del{background:rgba(255,77,77,.15);border:1px solid rgba(255,77,77,.3);color:var(--danger)}
+  .card-del:hover{background:rgba(255,77,77,.3)}
+  .card-edit{background:rgba(124,92,252,.15);border:1px solid rgba(124,92,252,.3);color:var(--accent2)}
+  .card-edit:hover{background:rgba(124,92,252,.3)}
+  body.admin-mode .sw-card{border-color:rgba(124,92,252,.25)}
+
   .skeleton{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;animation:pulse 1.5s ease infinite}
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
   .skeleton-thumb{width:100%;height:148px;background:var(--border)}
@@ -94,11 +99,9 @@
   .skeleton-line{height:12px;background:var(--border);border-radius:6px;margin-bottom:.6rem}
   .skeleton-line.short{width:60%}.skeleton-line.med{width:80%}
 
-  /* EMPTY */
   .empty-state{grid-column:1/-1;text-align:center;padding:4rem 2rem;color:var(--muted)}
   .empty-state svg{width:56px;height:56px;opacity:.3;margin-bottom:1rem}
 
-  /* MODALS */
   .modal-backdrop{display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.7);
                   backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:1rem}
   .modal-backdrop.open{display:flex}
@@ -110,7 +113,6 @@
   .modal-close{background:none;border:none;cursor:pointer;color:var(--muted);font-size:1.4rem;line-height:1;transition:color .2s}
   .modal-close:hover{color:var(--text)}
 
-  /* PAY MODAL */
   .pay-product-info{display:flex;align-items:center;gap:.9rem;background:rgba(0,229,160,.06);
                     border:1px solid rgba(0,229,160,.15);border-radius:12px;padding:.9rem 1rem;margin-bottom:1.25rem}
   .pay-icon{width:48px;height:48px;border-radius:12px;background:rgba(255,255,255,.06);
@@ -134,7 +136,6 @@
   .paystack-logo-line{display:flex;align-items:center;justify-content:center;gap:.4rem;margin-top:.5rem;font-size:.75rem;color:var(--muted)}
   .paystack-badge{background:#011B33;color:#00c3f7;font-size:.65rem;font-weight:700;letter-spacing:.05em;padding:.15rem .4rem;border-radius:4px}
 
-  /* FORM */
   .form-group{margin-bottom:1.1rem}
   .form-group label{display:block;font-size:.8rem;font-weight:500;color:var(--muted);margin-bottom:.4rem;letter-spacing:.04em;text-transform:uppercase}
   .form-control{width:100%;background:var(--card);border:1px solid var(--border);border-radius:10px;
@@ -142,20 +143,30 @@
   .form-control:focus{border-color:var(--accent2)}
   .form-control::placeholder{color:var(--muted)}
   textarea.form-control{resize:vertical;min-height:70px}
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
+
+  /* URL input with helper */
+  .url-wrap{position:relative}
+  .url-hint{font-size:.75rem;margin-top:.4rem;padding:.5rem .75rem;border-radius:8px;display:none;line-height:1.5}
+  .url-hint.gdrive{background:rgba(0,229,160,.07);border:1px solid rgba(0,229,160,.2);color:var(--accent);display:block}
+  .url-hint.bad{background:rgba(255,149,0,.07);border:1px solid rgba(255,149,0,.2);color:var(--warn);display:block}
+  .url-hint.good{background:rgba(0,229,160,.07);border:1px solid rgba(0,229,160,.2);color:var(--accent);display:block}
+  .btn-fix-url{background:var(--accent);color:#050a06;border:none;padding:.3rem .7rem;border-radius:6px;
+               font-size:.75rem;font-weight:700;cursor:pointer;margin-top:.35rem;display:none}
+  .btn-fix-url.show{display:inline-block}
+
   .file-upload-area{border:2px dashed var(--border);border-radius:12px;padding:1.5rem;text-align:center;
                     cursor:pointer;transition:all .2s;background:var(--card)}
   .file-upload-area:hover{border-color:var(--accent2);background:rgba(124,92,252,.05)}
   .file-upload-area.has-file{border-color:var(--accent)}
   .file-upload-area p{font-size:.82rem;color:var(--muted)}
   .file-name{color:var(--accent);font-size:.85rem;font-weight:500}
-  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
   .btn-submit{width:100%;background:var(--accent2);color:#fff;border:none;padding:.8rem;border-radius:11px;
               font-family:'Syne',sans-serif;font-size:.95rem;font-weight:700;cursor:pointer;transition:all .25s;
               margin-top:.5rem;display:flex;align-items:center;justify-content:center;gap:.5rem}
   .btn-submit:hover{opacity:.88;transform:translateY(-1px)}
   .btn-submit:disabled{opacity:.5;cursor:not-allowed;transform:none}
 
-  /* SUCCESS */
   .success-icon{width:72px;height:72px;border-radius:50%;background:rgba(0,229,160,.15);
                 border:2px solid var(--accent);display:flex;align-items:center;justify-content:center;
                 margin:0 auto 1.25rem;font-size:2rem}
@@ -167,7 +178,6 @@
               display:inline-flex;align-items:center;gap:.5rem;transition:all .25s}
   .btn-dl-now:hover{box-shadow:0 8px 24px rgba(0,229,160,.3);transform:translateY(-2px)}
 
-  /* TOAST */
   .toast{position:fixed;bottom:1.5rem;right:1.5rem;z-index:500;background:var(--surface);
          border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:10px;
          padding:.9rem 1.2rem;font-size:.85rem;max-width:300px;transform:translateX(120%);
@@ -175,13 +185,6 @@
   .toast.show{transform:translateX(0)}
   .toast.error{border-left-color:var(--danger)}
 
-  /* ADMIN */
-  .card-del{position:absolute;top:.5rem;left:.5rem;background:rgba(255,77,77,.15);
-            border:1px solid rgba(255,77,77,.3);color:var(--danger);border-radius:7px;
-            width:28px;height:28px;display:none;align-items:center;justify-content:center;
-            cursor:pointer;font-size:.8rem;transition:all .2s}
-  body.admin-mode .card-del{display:flex}
-  body.admin-mode .sw-card{border-color:rgba(124,92,252,.25)}
   .admin-bar{display:none;position:fixed;bottom:0;left:0;right:0;z-index:150;
              background:rgba(22,26,34,.96);backdrop-filter:blur(12px);
              border-top:1px solid var(--accent2);padding:.75rem 2rem;
@@ -197,9 +200,8 @@
                   font-size:.8rem;cursor:pointer;transition:all .2s}
   .btn-exit-admin:hover{background:rgba(255,77,77,.1)}
 
-  /* DB STATUS */
   .db-status{position:fixed;top:72px;right:1rem;z-index:99;font-size:.72rem;font-weight:500;
-             padding:.25rem .65rem;border-radius:20px;display:flex;align-items:center;gap:.35rem}
+             padding:.25rem .65rem;border-radius:20px;display:flex;align-items:center;gap:.35rem;transition:opacity .5s}
   .db-status.connecting{background:rgba(255,200,0,.1);border:1px solid rgba(255,200,0,.3);color:#ffc800}
   .db-status.connected{background:rgba(0,229,160,.1);border:1px solid rgba(0,229,160,.3);color:var(--accent)}
   .db-status.error{background:rgba(255,77,77,.1);border:1px solid rgba(255,77,77,.3);color:var(--danger)}
@@ -216,12 +218,8 @@
 </head>
 <body>
 
-<!-- DB STATUS INDICATOR -->
-<div class="db-status connecting" id="db-status">
-  <span class="db-dot"></span> Connecting…
-</div>
+<div class="db-status connecting" id="db-status"><span class="db-dot"></span> Connecting…</div>
 
-<!-- NAV -->
 <nav>
   <div class="nav-logo">Soft<span>Hub</span> GH</div>
   <div class="nav-actions">
@@ -230,14 +228,12 @@
   </div>
 </nav>
 
-<!-- HERO -->
 <section class="hero">
   <div class="hero-eyebrow">Ghana's Software Marketplace</div>
   <h1>Download <em>Premium</em><br>Software Instantly</h1>
   <p>Browse top tools, pay securely via Paystack, and download immediately. Fast. Safe. Local.</p>
 </section>
 
-<!-- FILTERS -->
 <div class="filters">
   <button class="filter-btn active" data-cat="all" onclick="filterCat(this)">All Software</button>
   <button class="filter-btn" data-cat="Productivity" onclick="filterCat(this)">Productivity</button>
@@ -248,17 +244,13 @@
   <button class="filter-btn" data-cat="Other" onclick="filterCat(this)">Other</button>
 </div>
 
-<!-- MAIN GRID -->
 <main>
-  <div class="grid-header">
-    <h2>Showing <span id="count">…</span> titles</h2>
-  </div>
+  <div class="grid-header"><h2>Showing <span id="count">…</span> titles</h2></div>
   <div id="software-grid"></div>
 </main>
 
-<!-- ADMIN BAR -->
 <div class="admin-bar">
-  <span>🔐 Admin Mode — saved to Firebase</span>
+  <span>🔐 Admin Mode — Firebase connected</span>
   <div style="display:flex;gap:.6rem">
     <button class="btn-add-sw" onclick="openAddModal()">＋ Add Software</button>
     <button class="btn-exit-admin" onclick="exitAdmin()">Exit Admin</button>
@@ -274,10 +266,7 @@
     </div>
     <div class="pay-product-info">
       <div class="pay-icon" id="pay-icon">📦</div>
-      <div>
-        <h4 id="pay-title">Software Name</h4>
-        <p id="pay-desc">Short description</p>
-      </div>
+      <div><h4 id="pay-title">Software Name</h4><p id="pay-desc">Short description</p></div>
     </div>
     <div class="pay-amount">GHC <span id="pay-price">1.00</span> <span>/ license</span></div>
     <input class="pay-email-field" type="email" id="pay-email" placeholder="Enter your email address"/>
@@ -285,22 +274,22 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
       Pay & Download Now
     </button>
-    <p class="pay-note">🔒 Secured by Paystack — GHC 1.00 will be charged</p>
+    <p class="pay-note">🔒 Secured by Paystack — amount shown above will be charged</p>
     <div class="paystack-logo-line">Powered by <span class="paystack-badge">PAYSTACK</span></div>
   </div>
 </div>
 
-<!-- ADD SOFTWARE MODAL -->
+<!-- ADD / EDIT SOFTWARE MODAL -->
 <div class="modal-backdrop" id="addModal">
   <div class="modal" style="max-width:520px">
     <div class="modal-head">
-      <h3>Add Software</h3>
+      <h3 id="form-title">Add Software</h3>
       <button class="modal-close" onclick="closeModal('addModal')">×</button>
     </div>
     <div class="form-row">
       <div class="form-group">
         <label>Software Name *</label>
-        <input class="form-control" id="f-name" placeholder="e.g. FileZap Pro"/>
+        <input class="form-control" id="f-name" placeholder="e.g. CorelDRAW 2021"/>
       </div>
       <div class="form-group">
         <label>Category *</label>
@@ -319,33 +308,46 @@
     <div class="form-row">
       <div class="form-group">
         <label>Version</label>
-        <input class="form-control" id="f-ver" placeholder="e.g. v2.4.1"/>
+        <input class="form-control" id="f-ver" placeholder="e.g. v2021"/>
       </div>
       <div class="form-group">
         <label>Price (GHC)</label>
         <input class="form-control" id="f-price" type="number" step="0.01" value="1.00"/>
       </div>
     </div>
+
+    <!-- URL FIELD WITH SMART HELPER -->
     <div class="form-group">
-      <label>Download URL *</label>
-      <input class="form-control" id="f-url" placeholder="https://example.com/software.zip"/>
+      <label>Download URL * <span style="color:var(--muted);text-transform:none;font-size:.7rem;letter-spacing:0">(must be a direct download link)</span></label>
+      <div class="url-wrap">
+        <input class="form-control" id="f-url" placeholder="https://…" oninput="checkUrl(this.value)"/>
+        <div class="url-hint" id="url-hint"></div>
+        <button class="btn-fix-url" id="btn-fix-url" onclick="fixGDriveUrl()">🔧 Auto-fix Google Drive link</button>
+      </div>
+      <div style="margin-top:.6rem;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:.7rem .9rem;font-size:.78rem;color:var(--muted);line-height:1.7">
+        <strong style="color:var(--text)">How to get a working download link:</strong><br>
+        📁 <strong style="color:var(--accent2)">Google Drive:</strong> Upload file → Right-click → Share → "Anyone with link" → Copy link → paste here (auto-fixed!)<br>
+        📁 <strong style="color:var(--accent2)">Mediafire:</strong> Upload → Copy the download link shown<br>
+        📁 <strong style="color:var(--accent2)">GitHub:</strong> Create release → upload file → copy download URL
+      </div>
     </div>
+
     <div class="form-group">
-      <label>Software Icon (image)</label>
+      <label>Software Icon <span style="color:var(--muted);text-transform:none;font-size:.7rem;letter-spacing:0">(PNG/JPG/WebP, max 500KB)</span></label>
       <div class="file-upload-area" id="icon-drop" onclick="document.getElementById('icon-file').click()">
-        <p id="drop-hint">Click to upload icon — PNG / JPG / WebP (max 500KB)</p>
+        <p id="drop-hint">Click to upload icon image</p>
         <p class="file-name" id="icon-name" style="display:none"></p>
       </div>
       <input type="file" id="icon-file" accept="image/*" style="display:none" onchange="handleIcon(this)"/>
     </div>
-    <button class="btn-submit" id="add-btn" onclick="addSoftware()">
+    <button class="btn-submit" id="add-btn" onclick="saveSoftware()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16"><path d="M12 5v14M5 12h14"/></svg>
-      Add to Store
+      <span id="add-btn-text">Add to Store</span>
     </button>
   </div>
 </div>
 
-<!-- ADMIN LOGIN MODAL -->
+<!-- ADMIN LOGIN -->
 <div class="modal-backdrop" id="loginModal">
   <div class="modal" style="max-width:360px">
     <div class="modal-head">
@@ -368,8 +370,8 @@
     <div class="success-modal">
       <div class="success-icon">✅</div>
       <h3>Payment Successful!</h3>
-      <p>Your payment was confirmed. Your download will begin automatically. Thank you for your purchase!</p>
-      <a id="dl-link" href="#" class="btn-dl-now" download>
+      <p>Your payment has been confirmed. Your download will begin automatically. Thank you!</p>
+      <a id="dl-link" href="#" class="btn-dl-now" target="_blank">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
         Download Now
       </a>
@@ -377,13 +379,12 @@
   </div>
 </div>
 
-<!-- TOAST -->
 <div class="toast" id="toast"><span id="toast-icon">✓</span><span id="toast-msg">Message</span></div>
 
 <script>
-// ═══════════════════════════════════════════
-// YOUR FIREBASE CONFIG — already set up! ✅
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════
 const firebaseConfig = {
   apiKey:            "AIzaSyCOlkyeec6vR-mpECHFSO7MhBc5eRooPOI",
   authDomain:        "softhub-gh.firebaseapp.com",
@@ -393,69 +394,44 @@ const firebaseConfig = {
   appId:             "1:545782586637:web:9b9d196f34d3af45cba444",
   measurementId:     "G-B2R41GCWP6"
 };
-
-// ═══════════════════════════════════════════
-// PAYSTACK KEY
-// ═══════════════════════════════════════════
 const PAYSTACK_PUBLIC_KEY = 'pk_test_15128a3fa59461d62456af1a299b48f98c9083c6';
-const ADMIN_PASSWORD = 'admin123'; // ← Change this to your own password!
+const ADMIN_PASSWORD = 'admin123'; // ← Change this!
 
-// ═══════════════════════════════════════════
-// INIT FIREBASE
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-// ═══════════════════════════════════════════
-// STATE
-// ═══════════════════════════════════════════
-let softwareList = [];
-let iconBase64   = null;
-let currentSoftware = null;
-let currentFilter   = 'all';
-let isAdmin = false;
+let softwareList = [], iconBase64 = null, currentSoftware = null;
+let currentFilter = 'all', isAdmin = false, editingId = null;
 
-// ═══════════════════════════════════════════
-// FIRESTORE REALTIME LISTENER
-// ═══════════════════════════════════════════
 const statusEl = document.getElementById('db-status');
-
 function setStatus(s) {
   statusEl.className = 'db-status ' + s;
-  statusEl.innerHTML = `<span class="db-dot"></span> ${{connecting:'Connecting…',connected:'Firebase Connected ✓',error:'DB Error'}[s]}`;
+  const labels = {connecting:'Connecting…', connected:'Firebase Connected ✓', error:'DB Error'};
+  statusEl.innerHTML = `<span class="db-dot"></span> ${labels[s]}`;
+  if (s === 'connected') setTimeout(() => { statusEl.style.opacity = '0'; }, 3000);
 }
 
 renderSkeletons();
+db.collection('software').orderBy('createdAt','desc').onSnapshot(snap => {
+  softwareList = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  renderGrid(currentFilter);
+  setStatus('connected');
+}, err => { setStatus('error'); showToast('DB error: ' + err.message, true); });
 
-db.collection('software')
-  .orderBy('createdAt', 'desc')
-  .onSnapshot(snap => {
-    softwareList = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    renderGrid(currentFilter);
-    setStatus('connected');
-    setTimeout(() => statusEl.style.opacity = '0', 3000);
-  }, err => {
-    setStatus('error');
-    console.error(err);
-    showToast('Database error: ' + err.message, true);
-  });
-
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════════
 // RENDER
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════════
 const EMOJIS = { Productivity:'📋', Design:'🎨', Security:'🔐', Utility:'🧹', Education:'📚', Other:'📦' };
 
 function renderSkeletons() {
   document.getElementById('software-grid').innerHTML = Array(4).fill(`
-    <div class="skeleton">
-      <div class="skeleton-thumb"></div>
-      <div class="skeleton-body">
-        <div class="skeleton-line short"></div>
-        <div class="skeleton-line med"></div>
-        <div class="skeleton-line"></div>
-        <div class="skeleton-line short"></div>
-      </div>
-    </div>`).join('');
+    <div class="skeleton"><div class="skeleton-thumb"></div>
+    <div class="skeleton-body"><div class="skeleton-line short"></div>
+    <div class="skeleton-line med"></div><div class="skeleton-line"></div>
+    <div class="skeleton-line short"></div></div></div>`).join('');
 }
 
 function renderGrid(filter = 'all') {
@@ -463,15 +439,12 @@ function renderGrid(filter = 'all') {
   const list = filter === 'all' ? softwareList : softwareList.filter(s => s.cat === filter);
   document.getElementById('count').textContent = list.length;
   grid.innerHTML = '';
-
   if (!list.length) {
     grid.innerHTML = `<div class="empty-state">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
-      <p>No software listed yet.${isAdmin ? '<br>Click "+ Add Software" below.' : ''}</p>
-    </div>`;
+      <p>No software listed yet.${isAdmin ? '<br>Click "+ Add Software" below.' : ''}</p></div>`;
     return;
   }
-
   list.forEach((sw, i) => {
     const card = document.createElement('div');
     card.className = 'sw-card';
@@ -480,7 +453,10 @@ function renderGrid(filter = 'all') {
       ? `<img src="${sw.iconBase64}" alt="${sw.name}"/>`
       : `<div class="thumb-placeholder">${EMOJIS[sw.cat] || '📦'}</div>`;
     card.innerHTML = `
-      <button class="card-del" onclick="deleteSoftware('${sw.id}',event)" title="Delete">✕</button>
+      <div class="card-admin-btns">
+        <button class="card-edit" onclick="openEditModal('${sw.id}',event)" title="Edit">✏</button>
+        <button class="card-del" onclick="deleteSoftware('${sw.id}',event)" title="Delete">✕</button>
+      </div>
       <div class="card-thumb">${thumb}<span class="card-badge">GHC ${parseFloat(sw.price||1).toFixed(2)}</span></div>
       <div class="card-body">
         <div class="card-meta">
@@ -508,9 +484,64 @@ function filterCat(btn) {
   renderGrid(currentFilter);
 }
 
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════════
+// URL HELPER — auto-detects & fixes Google Drive links
+// ═══════════════════════════════════════
+function checkUrl(val) {
+  const hint = document.getElementById('url-hint');
+  const fixBtn = document.getElementById('btn-fix-url');
+  if (!val) { hint.className = 'url-hint'; fixBtn.classList.remove('show'); return; }
+
+  // Google Drive share link
+  if (val.includes('drive.google.com/file/d/')) {
+    hint.className = 'url-hint gdrive';
+    hint.textContent = '✓ Google Drive link detected — click below to auto-convert to a direct download link.';
+    fixBtn.classList.add('show');
+    return;
+  }
+  // Already fixed GDrive
+  if (val.includes('drive.google.com/uc?export=download')) {
+    hint.className = 'url-hint good';
+    hint.textContent = '✓ Direct Google Drive download link — good to go!';
+    fixBtn.classList.remove('show');
+    return;
+  }
+  // Mediafire
+  if (val.includes('mediafire.com') || val.includes('mega.nz') || val.includes('github.com')) {
+    hint.className = 'url-hint good';
+    hint.textContent = '✓ Link looks good!';
+    fixBtn.classList.remove('show');
+    return;
+  }
+  // Generic URL
+  if (val.startsWith('http')) {
+    hint.className = 'url-hint good';
+    hint.textContent = '✓ URL entered. Make sure it is a direct download link.';
+    fixBtn.classList.remove('show');
+    return;
+  }
+  hint.className = 'url-hint bad';
+  hint.textContent = '⚠ URL must start with https://';
+  fixBtn.classList.remove('show');
+}
+
+function fixGDriveUrl() {
+  const input = document.getElementById('f-url');
+  const url = input.value.trim();
+  const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+  if (match) {
+    const fileId = match[1];
+    input.value = `https://drive.google.com/uc?export=download&id=${fileId}`;
+    checkUrl(input.value);
+    showToast('Google Drive link converted! ✓');
+  } else {
+    showToast('Could not extract file ID. Please check the link.', true);
+  }
+}
+
+// ═══════════════════════════════════════
 // PAYMENT
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════════
 function openPayment(id) {
   currentSoftware = softwareList.find(s => s.id === id);
   if (!currentSoftware) return;
@@ -522,10 +553,14 @@ function openPayment(id) {
     ? `<img src="${currentSoftware.iconBase64}" alt="">`
     : (EMOJIS[currentSoftware.cat] || '📦');
   document.getElementById('pay-email').value = '';
+  resetPayBtn();
+  openModal('payModal');
+}
+
+function resetPayBtn() {
   const btn = document.getElementById('pay-btn');
   btn.disabled = false;
   btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Pay & Download Now`;
-  openModal('payModal');
 }
 
 function initiatePayment() {
@@ -534,35 +569,28 @@ function initiatePayment() {
   const btn = document.getElementById('pay-btn');
   btn.disabled = true; btn.textContent = 'Opening Paystack…';
   const amount = Math.round(parseFloat(currentSoftware.price||1) * 100);
-  const handler = PaystackPop.setup({
+  PaystackPop.setup({
     key: PAYSTACK_PUBLIC_KEY, email, amount, currency: 'GHS',
     ref: 'SH-' + Date.now() + '-' + Math.floor(Math.random()*9999),
     metadata: { software_id: currentSoftware.id, software_name: currentSoftware.name },
-    callback: function(response) {
-      btn.disabled = false;
-      btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Pay & Download Now`;
-      closeModal('payModal');
-      onPaymentSuccess(response);
-    },
-    onClose: function() {
-      btn.disabled = false;
-      btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Pay & Download Now`;
-      showToast('Payment cancelled.', true);
-    }
-  });
-  handler.openIframe();
+    callback: function(response) { resetPayBtn(); closeModal('payModal'); onPaymentSuccess(response); },
+    onClose: function() { resetPayBtn(); showToast('Payment cancelled.', true); }
+  }).openIframe();
 }
 
 function onPaymentSuccess(response) {
+  const url = currentSoftware.url;
   const dlLink = document.getElementById('dl-link');
-  if (currentSoftware.url && currentSoftware.url !== '#') {
-    dlLink.href = currentSoftware.url;
-    dlLink.setAttribute('download', currentSoftware.name);
-    setTimeout(() => { const a = document.createElement('a'); a.href = currentSoftware.url; a.download = currentSoftware.name; a.click(); }, 600);
-  } else { dlLink.href = '#'; }
+  if (url && url !== '#') {
+    dlLink.href = url;
+    // auto-trigger download
+    setTimeout(() => {
+      const a = document.createElement('a');
+      a.href = url; a.target = '_blank'; a.click();
+    }, 500);
+  }
   openModal('successModal');
   showToast('Payment verified! Ref: ' + response.reference);
-  // Log sale
   db.collection('sales').add({
     softwareId: currentSoftware.id, softwareName: currentSoftware.name,
     amount: currentSoftware.price, ref: response.reference,
@@ -570,9 +598,9 @@ function onPaymentSuccess(response) {
   }).catch(()=>{});
 }
 
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════════
 // ADMIN
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════════
 function openAdminLogin() {
   if (isAdmin) { exitAdmin(); return; }
   document.getElementById('admin-pass').value = '';
@@ -589,24 +617,57 @@ function exitAdmin() {
   showToast('Exited admin mode.');
 }
 
-function openAddModal() {
+function resetForm() {
   ['f-name','f-desc','f-ver','f-url'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('f-cat').value = '';
   document.getElementById('f-price').value = '1.00';
   document.getElementById('icon-name').style.display = 'none';
   document.getElementById('drop-hint').style.display = '';
   document.getElementById('icon-drop').classList.remove('has-file');
-  iconBase64 = null;
+  document.getElementById('url-hint').className = 'url-hint';
+  document.getElementById('btn-fix-url').classList.remove('show');
+  iconBase64 = null; editingId = null;
+}
+
+function openAddModal() {
+  resetForm();
+  document.getElementById('form-title').textContent = 'Add Software';
+  document.getElementById('add-btn-text').textContent = 'Add to Store';
   const btn = document.getElementById('add-btn');
   btn.disabled = false;
-  btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16"><path d="M12 5v14M5 12h14"/></svg> Add to Store`;
+  btn.querySelector('svg').style.display = '';
+  openModal('addModal');
+}
+
+function openEditModal(id, e) {
+  e.stopPropagation();
+  const sw = softwareList.find(s => s.id === id);
+  if (!sw) return;
+  resetForm();
+  editingId = id;
+  document.getElementById('form-title').textContent = 'Edit Software';
+  document.getElementById('add-btn-text').textContent = 'Save Changes';
+  document.getElementById('f-name').value = sw.name || '';
+  document.getElementById('f-cat').value = sw.cat || '';
+  document.getElementById('f-desc').value = sw.desc || '';
+  document.getElementById('f-ver').value = sw.version || '';
+  document.getElementById('f-price').value = sw.price || 1.00;
+  document.getElementById('f-url').value = sw.url || '';
+  checkUrl(sw.url || '');
+  if (sw.iconBase64) {
+    iconBase64 = sw.iconBase64;
+    document.getElementById('icon-drop').classList.add('has-file');
+    document.getElementById('drop-hint').style.display = 'none';
+    const nm = document.getElementById('icon-name');
+    nm.textContent = '✓ Icon already uploaded'; nm.style.display = 'block';
+  }
   openModal('addModal');
 }
 
 function handleIcon(input) {
   if (!input.files[0]) return;
   const file = input.files[0];
-  if (file.size > 600 * 1024) { showToast('Icon too large — max 500KB please.', true); return; }
+  if (file.size > 600 * 1024) { showToast('Icon too large — max 500KB.', true); return; }
   const reader = new FileReader();
   reader.onload = e => {
     iconBase64 = e.target.result;
@@ -618,7 +679,7 @@ function handleIcon(input) {
   reader.readAsDataURL(file);
 }
 
-async function addSoftware() {
+async function saveSoftware() {
   const name  = document.getElementById('f-name').value.trim();
   const cat   = document.getElementById('f-cat').value;
   const desc  = document.getElementById('f-desc').value.trim();
@@ -626,22 +687,28 @@ async function addSoftware() {
   const price = parseFloat(document.getElementById('f-price').value) || 1.00;
   const url   = document.getElementById('f-url').value.trim();
   if (!name || !cat || !desc || !url) { showToast('Please fill all required fields.', true); return; }
+  if (!url.startsWith('http')) { showToast('Download URL must start with https://', true); return; }
 
   const btn = document.getElementById('add-btn');
-  btn.disabled = true; btn.textContent = 'Saving to Firebase…';
+  btn.disabled = true;
+  document.getElementById('add-btn-text').textContent = editingId ? 'Saving…' : 'Adding…';
+
+  const data = { name, cat, desc, version: ver, price, url, iconBase64: iconBase64 || '' };
 
   try {
-    await db.collection('software').add({
-      name, cat, desc, version: ver, price, url,
-      iconBase64: iconBase64 || '',
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    });
+    if (editingId) {
+      await db.collection('software').doc(editingId).update(data);
+      showToast(`"${name}" updated! ✓`);
+    } else {
+      data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+      await db.collection('software').add(data);
+      showToast(`"${name}" is now live! ✨`);
+    }
     closeModal('addModal');
-    showToast(`"${name}" is now live in the store! ✨`);
   } catch(e) {
-    showToast('Error saving: ' + e.message, true);
+    showToast('Error: ' + e.message, true);
     btn.disabled = false;
-    btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16"><path d="M12 5v14M5 12h14"/></svg> Add to Store`;
+    document.getElementById('add-btn-text').textContent = editingId ? 'Save Changes' : 'Add to Store';
   }
 }
 
@@ -654,18 +721,15 @@ async function deleteSoftware(id, e) {
   } catch(err) { showToast('Delete failed: ' + err.message, true); }
 }
 
-// ═══════════════════════════════════════════
-// MODAL HELPERS
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════
 function openModal(id) { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 document.querySelectorAll('.modal-backdrop').forEach(m => {
   m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
 });
 
-// ═══════════════════════════════════════════
-// TOAST
-// ═══════════════════════════════════════════
 let toastTimer;
 function showToast(msg, isError=false) {
   const t = document.getElementById('toast');
