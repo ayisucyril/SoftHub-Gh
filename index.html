@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SoftHub GH — Software Marketplace</title>
+<script src="https://js.paystack.co/v1/inline.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet"/>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+<style>
+  :root {
+    --bg:#0a0c10; --surface:#111318; --card:#161a22; --border:#222733;
+    --accent:#00e5a0; --accent2:#7c5cfc; --text:#e8eaf0;
+    --muted:#6b7280; --danger:#ff4d4d; --gold:#ffd700;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+  body::before{content:'';position:fixed;inset:0;z-index:0;
+    background:radial-gradient(ellipse 60% 40% at 80% 20%,rgba(124,92,252,.12) 0%,transparent 60%),
+               radial-gradient(ellipse 50% 50% at 10% 80%,rgba(0,229,160,.08) 0%,transparent 55%);
+    pointer-events:none}
+
+  /* NAV */
+  nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;
+      padding:0 2rem;height:64px;background:rgba(10,12,16,.88);backdrop-filter:blur(16px);
+      border-bottom:1px solid var(--border)}
+  .nav-logo{font-family:'Syne',sans-serif;font-size:1.35rem;font-weight:800;color:var(--accent);letter-spacing:-.02em}
+  .nav-logo span{color:var(--text)}
+  .nav-actions{display:flex;gap:.75rem;align-items:center}
+  .btn-admin{background:var(--accent2);color:#fff;border:none;padding:.45rem 1.1rem;border-radius:8px;
+             font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:500;cursor:pointer;transition:opacity .2s}
+  .btn-admin:hover{opacity:.85}
+  .nav-badge{background:rgba(0,229,160,.12);border:1px solid rgba(0,229,160,.3);color:var(--accent);
+             font-size:.75rem;font-weight:500;padding:.3rem .7rem;border-radius:20px}
+
+  /* HERO */
+  .hero{position:relative;z-index:1;text-align:center;padding:5rem 2rem 3rem}
+  .hero-eyebrow{display:inline-block;font-size:.8rem;font-weight:500;letter-spacing:.12em;text-transform:uppercase;
+                color:var(--accent);background:rgba(0,229,160,.08);border:1px solid rgba(0,229,160,.2);
+                padding:.3rem .9rem;border-radius:20px;margin-bottom:1.2rem}
+  .hero h1{font-family:'Syne',sans-serif;font-size:clamp(2.2rem,5vw,4rem);font-weight:800;line-height:1.1;letter-spacing:-.03em}
+  .hero h1 em{font-style:normal;color:var(--accent)}
+  .hero p{max-width:520px;margin:1rem auto 0;color:var(--muted);font-size:1.05rem;line-height:1.65}
+
+  /* FILTERS */
+  .filters{position:relative;z-index:1;display:flex;gap:.5rem;flex-wrap:wrap;justify-content:center;padding:1.5rem 2rem 2rem}
+  .filter-btn{background:var(--card);border:1px solid var(--border);color:var(--muted);padding:.4rem 1rem;
+              border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.85rem;cursor:pointer;transition:all .2s}
+  .filter-btn:hover,.filter-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(0,229,160,.07)}
+
+  /* GRID */
+  main{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:0 1.5rem 5rem}
+  .grid-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem}
+  .grid-header h2{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:700;color:var(--muted)}
+  .grid-header h2 span{color:var(--text)}
+  #software-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1.25rem}
+
+  /* CARD */
+  .sw-card{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;
+           transition:transform .25s,border-color .25s,box-shadow .25s;position:relative;animation:fadeUp .4s ease both}
+  .sw-card:hover{transform:translateY(-4px);border-color:rgba(0,229,160,.3);box-shadow:0 12px 40px rgba(0,229,160,.08)}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+  .card-thumb{width:100%;height:148px;background:linear-gradient(135deg,#1a1f2e,#0f1218);
+              display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative}
+  .card-thumb img{width:72px;height:72px;object-fit:contain;filter:drop-shadow(0 4px 16px rgba(0,0,0,.4));transition:transform .3s}
+  .sw-card:hover .card-thumb img{transform:scale(1.08)}
+  .card-thumb .thumb-placeholder{width:72px;height:72px;border-radius:18px;display:flex;align-items:center;
+                                  justify-content:center;font-size:2.2rem;background:rgba(255,255,255,.06)}
+  .card-badge{position:absolute;top:.6rem;right:.6rem;background:rgba(0,229,160,.15);border:1px solid rgba(0,229,160,.25);
+              color:var(--accent);font-size:.7rem;font-weight:600;padding:.2rem .55rem;border-radius:6px;
+              letter-spacing:.05em;text-transform:uppercase}
+  .card-body{padding:1rem 1.1rem 1.1rem}
+  .card-meta{display:flex;align-items:center;gap:.5rem;margin-bottom:.4rem}
+  .card-cat{font-size:.7rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--accent2)}
+  .card-version{font-size:.7rem;color:var(--muted)}
+  .card-title{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;line-height:1.3;margin-bottom:.35rem}
+  .card-desc{font-size:.82rem;color:var(--muted);line-height:1.55;margin-bottom:.85rem;
+             display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .card-footer{display:flex;align-items:center;justify-content:space-between}
+  .card-price{font-family:'Syne',sans-serif;font-size:1.05rem;font-weight:700;color:var(--gold)}
+  .card-price small{font-size:.65rem;font-weight:400;color:var(--muted);font-family:'DM Sans',sans-serif}
+  .btn-download{display:flex;align-items:center;gap:.4rem;background:var(--accent);color:#050a06;border:none;
+                padding:.5rem .9rem;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.82rem;
+                font-weight:600;cursor:pointer;transition:all .2s}
+  .btn-download:hover{background:#00ffb3;box-shadow:0 4px 16px rgba(0,229,160,.35);transform:scale(1.03)}
+  .btn-download svg{width:14px;height:14px}
+
+  /* SKELETON */
+  .skeleton{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;animation:pulse 1.5s ease infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+  .skeleton-thumb{width:100%;height:148px;background:var(--border)}
+  .skeleton-body{padding:1rem 1.1rem 1.1rem}
+  .skeleton-line{height:12px;background:var(--border);border-radius:6px;margin-bottom:.6rem}
+  .skeleton-line.short{width:60%}.skeleton-line.med{width:80%}
+
+  /* EMPTY */
+  .empty-state{grid-column:1/-1;text-align:center;padding:4rem 2rem;color:var(--muted)}
+  .empty-state svg{width:56px;height:56px;opacity:.3;margin-bottom:1rem}
+
+  /* MODALS */
+  .modal-backdrop{display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.7);
+                  backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:1rem}
+  .modal-backdrop.open{display:flex}
+  .modal{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:2rem;
+         width:100%;max-width:480px;animation:modalIn .3s cubic-bezier(.34,1.56,.64,1);max-height:90vh;overflow-y:auto}
+  @keyframes modalIn{from{opacity:0;transform:scale(.9) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
+  .modal-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.5rem}
+  .modal-head h3{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:700}
+  .modal-close{background:none;border:none;cursor:pointer;color:var(--muted);font-size:1.4rem;line-height:1;transition:color .2s}
+  .modal-close:hover{color:var(--text)}
+
+  /* PAY MODAL */
+  .pay-product-info{display:flex;align-items:center;gap:.9rem;background:rgba(0,229,160,.06);
+                    border:1px solid rgba(0,229,160,.15);border-radius:12px;padding:.9rem 1rem;margin-bottom:1.25rem}
+  .pay-icon{width:48px;height:48px;border-radius:12px;background:rgba(255,255,255,.06);
+            display:flex;align-items:center;justify-content:center;font-size:1.6rem;flex-shrink:0;overflow:hidden}
+  .pay-icon img{width:100%;height:100%;object-fit:contain}
+  .pay-product-info h4{font-family:'Syne',sans-serif;font-size:.95rem;font-weight:700}
+  .pay-product-info p{font-size:.78rem;color:var(--muted);margin-top:.15rem}
+  .pay-amount{font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;color:var(--gold);text-align:center;margin:1.25rem 0}
+  .pay-amount span{font-size:1rem;font-weight:500;color:var(--muted);font-family:'DM Sans',sans-serif}
+  .pay-email-field{width:100%;background:var(--card);border:1px solid var(--border);border-radius:10px;
+                   color:var(--text);font-family:'DM Sans',sans-serif;font-size:.9rem;padding:.7rem 1rem;
+                   outline:none;transition:border-color .2s;margin-bottom:1rem}
+  .pay-email-field:focus{border-color:var(--accent)}
+  .pay-email-field::placeholder{color:var(--muted)}
+  .btn-pay{width:100%;background:linear-gradient(135deg,var(--accent),#00c98a);color:#050a06;border:none;
+           padding:.85rem;border-radius:11px;font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;
+           cursor:pointer;transition:all .25s;display:flex;align-items:center;justify-content:center;gap:.5rem}
+  .btn-pay:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,229,160,.3)}
+  .btn-pay:disabled{opacity:.6;cursor:not-allowed;transform:none}
+  .pay-note{text-align:center;font-size:.75rem;color:var(--muted);margin-top:.75rem}
+  .paystack-logo-line{display:flex;align-items:center;justify-content:center;gap:.4rem;margin-top:.5rem;font-size:.75rem;color:var(--muted)}
+  .paystack-badge{background:#011B33;color:#00c3f7;font-size:.65rem;font-weight:700;letter-spacing:.05em;padding:.15rem .4rem;border-radius:4px}
+
+  /* FORM */
+  .form-group{margin-bottom:1.1rem}
+  .form-group label{display:block;font-size:.8rem;font-weight:500;color:var(--muted);margin-bottom:.4rem;letter-spacing:.04em;text-transform:uppercase}
+  .form-control{width:100%;background:var(--card);border:1px solid var(--border);border-radius:10px;
+                color:var(--text);font-family:'DM Sans',sans-serif;font-size:.9rem;padding:.65rem 1rem;outline:none;transition:border-color .2s}
+  .form-control:focus{border-color:var(--accent2)}
+  .form-control::placeholder{color:var(--muted)}
+  textarea.form-control{resize:vertical;min-height:70px}
+  .file-upload-area{border:2px dashed var(--border);border-radius:12px;padding:1.5rem;text-align:center;
+                    cursor:pointer;transition:all .2s;background:var(--card)}
+  .file-upload-area:hover{border-color:var(--accent2);background:rgba(124,92,252,.05)}
+  .file-upload-area.has-file{border-color:var(--accent)}
+  .file-upload-area p{font-size:.82rem;color:var(--muted)}
+  .file-name{color:var(--accent);font-size:.85rem;font-weight:500}
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
+  .btn-submit{width:100%;background:var(--accent2);color:#fff;border:none;padding:.8rem;border-radius:11px;
+              font-family:'Syne',sans-serif;font-size:.95rem;font-weight:700;cursor:pointer;transition:all .25s;
+              margin-top:.5rem;display:flex;align-items:center;justify-content:center;gap:.5rem}
+  .btn-submit:hover{opacity:.88;transform:translateY(-1px)}
+  .btn-submit:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
+  /* SUCCESS */
+  .success-icon{width:72px;height:72px;border-radius:50%;background:rgba(0,229,160,.15);
+                border:2px solid var(--accent);display:flex;align-items:center;justify-content:center;
+                margin:0 auto 1.25rem;font-size:2rem}
+  .success-modal{text-align:center}
+  .success-modal h3{font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:700;margin-bottom:.5rem}
+  .success-modal p{font-size:.9rem;color:var(--muted);margin-bottom:1.5rem;line-height:1.6}
+  .btn-dl-now{background:var(--accent);color:#050a06;border:none;padding:.8rem 2rem;border-radius:11px;
+              font-family:'Syne',sans-serif;font-size:.95rem;font-weight:700;cursor:pointer;text-decoration:none;
+              display:inline-flex;align-items:center;gap:.5rem;transition:all .25s}
+  .btn-dl-now:hover{box-shadow:0 8px 24px rgba(0,229,160,.3);transform:translateY(-2px)}
+
+  /* TOAST */
+  .toast{position:fixed;bottom:1.5rem;right:1.5rem;z-index:500;background:var(--surface);
+         border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:10px;
+         padding:.9rem 1.2rem;font-size:.85rem;max-width:300px;transform:translateX(120%);
+         transition:transform .35s cubic-bezier(.34,1.56,.64,1);display:flex;align-items:center;gap:.6rem}
+  .toast.show{transform:translateX(0)}
+  .toast.error{border-left-color:var(--danger)}
+
+  /* ADMIN */
+  .card-del{position:absolute;top:.5rem;left:.5rem;background:rgba(255,77,77,.15);
+            border:1px solid rgba(255,77,77,.3);color:var(--danger);border-radius:7px;
+            width:28px;height:28px;display:none;align-items:center;justify-content:center;
+            cursor:pointer;font-size:.8rem;transition:all .2s}
+  body.admin-mode .card-del{display:flex}
+  body.admin-mode .sw-card{border-color:rgba(124,92,252,.25)}
+  .admin-bar{display:none;position:fixed;bottom:0;left:0;right:0;z-index:150;
+             background:rgba(22,26,34,.96);backdrop-filter:blur(12px);
+             border-top:1px solid var(--accent2);padding:.75rem 2rem;
+             align-items:center;justify-content:space-between}
+  body.admin-mode .admin-bar{display:flex}
+  .admin-bar span{font-size:.85rem;color:var(--accent2);font-weight:500}
+  .btn-add-sw{background:var(--accent2);color:#fff;border:none;padding:.55rem 1.2rem;border-radius:9px;
+              font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:600;cursor:pointer;
+              transition:opacity .2s;display:flex;align-items:center;gap:.4rem}
+  .btn-add-sw:hover{opacity:.85}
+  .btn-exit-admin{background:none;border:1px solid rgba(255,77,77,.4);color:var(--danger);
+                  padding:.45rem .9rem;border-radius:8px;font-family:'DM Sans',sans-serif;
+                  font-size:.8rem;cursor:pointer;transition:all .2s}
+  .btn-exit-admin:hover{background:rgba(255,77,77,.1)}
+
+  /* DB STATUS */
+  .db-status{position:fixed;top:72px;right:1rem;z-index:99;font-size:.72rem;font-weight:500;
+             padding:.25rem .65rem;border-radius:20px;display:flex;align-items:center;gap:.35rem}
+  .db-status.connecting{background:rgba(255,200,0,.1);border:1px solid rgba(255,200,0,.3);color:#ffc800}
+  .db-status.connected{background:rgba(0,229,160,.1);border:1px solid rgba(0,229,160,.3);color:var(--accent)}
+  .db-status.error{background:rgba(255,77,77,.1);border:1px solid rgba(255,77,77,.3);color:var(--danger)}
+  .db-dot{width:6px;height:6px;border-radius:50%;background:currentColor;animation:blink 1.4s ease infinite}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+  @media(max-width:600px){
+    nav{padding:0 1rem}
+    .hero{padding:3rem 1rem 2rem}
+    .modal{padding:1.5rem}
+    .form-row{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+
+<!-- DB STATUS INDICATOR -->
+<div class="db-status connecting" id="db-status">
+  <span class="db-dot"></span> Connecting…
+</div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">Soft<span>Hub</span> GH</div>
+  <div class="nav-actions">
+    <span class="nav-badge">🇬🇭 GHC Store</span>
+    <button class="btn-admin" onclick="openAdminLogin()">Admin</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-eyebrow">Ghana's Software Marketplace</div>
+  <h1>Download <em>Premium</em><br>Software Instantly</h1>
+  <p>Browse top tools, pay securely via Paystack, and download immediately. Fast. Safe. Local.</p>
+</section>
+
+<!-- FILTERS -->
+<div class="filters">
+  <button class="filter-btn active" data-cat="all" onclick="filterCat(this)">All Software</button>
+  <button class="filter-btn" data-cat="Productivity" onclick="filterCat(this)">Productivity</button>
+  <button class="filter-btn" data-cat="Design" onclick="filterCat(this)">Design</button>
+  <button class="filter-btn" data-cat="Security" onclick="filterCat(this)">Security</button>
+  <button class="filter-btn" data-cat="Utility" onclick="filterCat(this)">Utility</button>
+  <button class="filter-btn" data-cat="Education" onclick="filterCat(this)">Education</button>
+  <button class="filter-btn" data-cat="Other" onclick="filterCat(this)">Other</button>
+</div>
+
+<!-- MAIN GRID -->
+<main>
+  <div class="grid-header">
+    <h2>Showing <span id="count">…</span> titles</h2>
+  </div>
+  <div id="software-grid"></div>
+</main>
+
+<!-- ADMIN BAR -->
+<div class="admin-bar">
+  <span>🔐 Admin Mode — saved to Firebase</span>
+  <div style="display:flex;gap:.6rem">
+    <button class="btn-add-sw" onclick="openAddModal()">＋ Add Software</button>
+    <button class="btn-exit-admin" onclick="exitAdmin()">Exit Admin</button>
+  </div>
+</div>
+
+<!-- PAYMENT MODAL -->
+<div class="modal-backdrop" id="payModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Complete Purchase</h3>
+      <button class="modal-close" onclick="closeModal('payModal')">×</button>
+    </div>
+    <div class="pay-product-info">
+      <div class="pay-icon" id="pay-icon">📦</div>
+      <div>
+        <h4 id="pay-title">Software Name</h4>
+        <p id="pay-desc">Short description</p>
+      </div>
+    </div>
+    <div class="pay-amount">GHC <span id="pay-price">1.00</span> <span>/ license</span></div>
+    <input class="pay-email-field" type="email" id="pay-email" placeholder="Enter your email address"/>
+    <button class="btn-pay" id="pay-btn" onclick="initiatePayment()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      Pay & Download Now
+    </button>
+    <p class="pay-note">🔒 Secured by Paystack — GHC 1.00 will be charged</p>
+    <div class="paystack-logo-line">Powered by <span class="paystack-badge">PAYSTACK</span></div>
+  </div>
+</div>
+
+<!-- ADD SOFTWARE MODAL -->
+<div class="modal-backdrop" id="addModal">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-head">
+      <h3>Add Software</h3>
+      <button class="modal-close" onclick="closeModal('addModal')">×</button>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Software Name *</label>
+        <input class="form-control" id="f-name" placeholder="e.g. FileZap Pro"/>
+      </div>
+      <div class="form-group">
+        <label>Category *</label>
+        <select class="form-control" id="f-cat">
+          <option value="">Select…</option>
+          <option>Productivity</option><option>Design</option>
+          <option>Security</option><option>Utility</option>
+          <option>Education</option><option>Other</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Description *</label>
+      <textarea class="form-control" id="f-desc" placeholder="Brief description…"></textarea>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Version</label>
+        <input class="form-control" id="f-ver" placeholder="e.g. v2.4.1"/>
+      </div>
+      <div class="form-group">
+        <label>Price (GHC)</label>
+        <input class="form-control" id="f-price" type="number" step="0.01" value="1.00"/>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Download URL *</label>
+      <input class="form-control" id="f-url" placeholder="https://example.com/software.zip"/>
+    </div>
+    <div class="form-group">
+      <label>Software Icon (image)</label>
+      <div class="file-upload-area" id="icon-drop" onclick="document.getElementById('icon-file').click()">
+        <p id="drop-hint">Click to upload icon — PNG / JPG / WebP (max 500KB)</p>
+        <p class="file-name" id="icon-name" style="display:none"></p>
+      </div>
+      <input type="file" id="icon-file" accept="image/*" style="display:none" onchange="handleIcon(this)"/>
+    </div>
+    <button class="btn-submit" id="add-btn" onclick="addSoftware()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16"><path d="M12 5v14M5 12h14"/></svg>
+      Add to Store
+    </button>
+  </div>
+</div>
+
+<!-- ADMIN LOGIN MODAL -->
+<div class="modal-backdrop" id="loginModal">
+  <div class="modal" style="max-width:360px">
+    <div class="modal-head">
+      <h3>Admin Login</h3>
+      <button class="modal-close" onclick="closeModal('loginModal')">×</button>
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input class="form-control" type="password" id="admin-pass" placeholder="Enter admin password"
+             onkeydown="if(event.key==='Enter')checkAdmin()"/>
+    </div>
+    <p style="font-size:.75rem;color:var(--muted);margin-bottom:.75rem">Default: <code style="color:var(--accent)">admin123</code></p>
+    <button class="btn-submit" onclick="checkAdmin()">Login</button>
+  </div>
+</div>
+
+<!-- SUCCESS MODAL -->
+<div class="modal-backdrop" id="successModal">
+  <div class="modal" style="max-width:380px">
+    <div class="success-modal">
+      <div class="success-icon">✅</div>
+      <h3>Payment Successful!</h3>
+      <p>Your payment was confirmed. Your download will begin automatically. Thank you for your purchase!</p>
+      <a id="dl-link" href="#" class="btn-dl-now" download>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+        Download Now
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"><span id="toast-icon">✓</span><span id="toast-msg">Message</span></div>
+
+<script>
+// ═══════════════════════════════════════════
+// YOUR FIREBASE CONFIG — already set up! ✅
+// ═══════════════════════════════════════════
+const firebaseConfig = {
+  apiKey:            "AIzaSyCOlkyeec6vR-mpECHFSO7MhBc5eRooPOI",
+  authDomain:        "softhub-gh.firebaseapp.com",
+  projectId:         "softhub-gh",
+  storageBucket:     "softhub-gh.firebasestorage.app",
+  messagingSenderId: "545782586637",
+  appId:             "1:545782586637:web:9b9d196f34d3af45cba444",
+  measurementId:     "G-B2R41GCWP6"
+};
+
+// ═══════════════════════════════════════════
+// PAYSTACK KEY
+// ═══════════════════════════════════════════
+const PAYSTACK_PUBLIC_KEY = 'pk_test_15128a3fa59461d62456af1a299b48f98c9083c6';
+const ADMIN_PASSWORD = 'admin123'; // ← Change this to your own password!
+
+// ═══════════════════════════════════════════
+// INIT FIREBASE
+// ═══════════════════════════════════════════
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+// ═══════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════
+let softwareList = [];
+let iconBase64   = null;
+let currentSoftware = null;
+let currentFilter   = 'all';
+let isAdmin = false;
+
+// ═══════════════════════════════════════════
+// FIRESTORE REALTIME LISTENER
+// ═══════════════════════════════════════════
+const statusEl = document.getElementById('db-status');
+
+function setStatus(s) {
+  statusEl.className = 'db-status ' + s;
+  statusEl.innerHTML = `<span class="db-dot"></span> ${{connecting:'Connecting…',connected:'Firebase Connected ✓',error:'DB Error'}[s]}`;
+}
+
+renderSkeletons();
+
+db.collection('software')
+  .orderBy('createdAt', 'desc')
+  .onSnapshot(snap => {
+    softwareList = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderGrid(currentFilter);
+    setStatus('connected');
+    setTimeout(() => statusEl.style.opacity = '0', 3000);
+  }, err => {
+    setStatus('error');
+    console.error(err);
+    showToast('Database error: ' + err.message, true);
+  });
+
+// ═══════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════
+const EMOJIS = { Productivity:'📋', Design:'🎨', Security:'🔐', Utility:'🧹', Education:'📚', Other:'📦' };
+
+function renderSkeletons() {
+  document.getElementById('software-grid').innerHTML = Array(4).fill(`
+    <div class="skeleton">
+      <div class="skeleton-thumb"></div>
+      <div class="skeleton-body">
+        <div class="skeleton-line short"></div>
+        <div class="skeleton-line med"></div>
+        <div class="skeleton-line"></div>
+        <div class="skeleton-line short"></div>
+      </div>
+    </div>`).join('');
+}
+
+function renderGrid(filter = 'all') {
+  const grid = document.getElementById('software-grid');
+  const list = filter === 'all' ? softwareList : softwareList.filter(s => s.cat === filter);
+  document.getElementById('count').textContent = list.length;
+  grid.innerHTML = '';
+
+  if (!list.length) {
+    grid.innerHTML = `<div class="empty-state">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+      <p>No software listed yet.${isAdmin ? '<br>Click "+ Add Software" below.' : ''}</p>
+    </div>`;
+    return;
+  }
+
+  list.forEach((sw, i) => {
+    const card = document.createElement('div');
+    card.className = 'sw-card';
+    card.style.animationDelay = `${i * 0.05}s`;
+    const thumb = sw.iconBase64
+      ? `<img src="${sw.iconBase64}" alt="${sw.name}"/>`
+      : `<div class="thumb-placeholder">${EMOJIS[sw.cat] || '📦'}</div>`;
+    card.innerHTML = `
+      <button class="card-del" onclick="deleteSoftware('${sw.id}',event)" title="Delete">✕</button>
+      <div class="card-thumb">${thumb}<span class="card-badge">GHC ${parseFloat(sw.price||1).toFixed(2)}</span></div>
+      <div class="card-body">
+        <div class="card-meta">
+          <span class="card-cat">${sw.cat}</span>
+          ${sw.version ? `<span class="card-version">• ${sw.version}</span>` : ''}
+        </div>
+        <div class="card-title">${sw.name}</div>
+        <div class="card-desc">${sw.desc}</div>
+        <div class="card-footer">
+          <div class="card-price">GHC ${parseFloat(sw.price||1).toFixed(2)} <small>/license</small></div>
+          <button class="btn-download" onclick="openPayment('${sw.id}')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+            Download
+          </button>
+        </div>
+      </div>`;
+    grid.appendChild(card);
+  });
+}
+
+function filterCat(btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentFilter = btn.dataset.cat;
+  renderGrid(currentFilter);
+}
+
+// ═══════════════════════════════════════════
+// PAYMENT
+// ═══════════════════════════════════════════
+function openPayment(id) {
+  currentSoftware = softwareList.find(s => s.id === id);
+  if (!currentSoftware) return;
+  document.getElementById('pay-title').textContent = currentSoftware.name;
+  document.getElementById('pay-desc').textContent = (currentSoftware.desc||'').slice(0,60) + '…';
+  document.getElementById('pay-price').textContent = parseFloat(currentSoftware.price||1).toFixed(2);
+  const iconEl = document.getElementById('pay-icon');
+  iconEl.innerHTML = currentSoftware.iconBase64
+    ? `<img src="${currentSoftware.iconBase64}" alt="">`
+    : (EMOJIS[currentSoftware.cat] || '📦');
+  document.getElementById('pay-email').value = '';
+  const btn = document.getElementById('pay-btn');
+  btn.disabled = false;
+  btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Pay & Download Now`;
+  openModal('payModal');
+}
+
+function initiatePayment() {
+  const email = document.getElementById('pay-email').value.trim();
+  if (!email || !email.includes('@')) { showToast('Please enter a valid email.', true); return; }
+  const btn = document.getElementById('pay-btn');
+  btn.disabled = true; btn.textContent = 'Opening Paystack…';
+  const amount = Math.round(parseFloat(currentSoftware.price||1) * 100);
+  const handler = PaystackPop.setup({
+    key: PAYSTACK_PUBLIC_KEY, email, amount, currency: 'GHS',
+    ref: 'SH-' + Date.now() + '-' + Math.floor(Math.random()*9999),
+    metadata: { software_id: currentSoftware.id, software_name: currentSoftware.name },
+    callback: function(response) {
+      btn.disabled = false;
+      btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Pay & Download Now`;
+      closeModal('payModal');
+      onPaymentSuccess(response);
+    },
+    onClose: function() {
+      btn.disabled = false;
+      btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Pay & Download Now`;
+      showToast('Payment cancelled.', true);
+    }
+  });
+  handler.openIframe();
+}
+
+function onPaymentSuccess(response) {
+  const dlLink = document.getElementById('dl-link');
+  if (currentSoftware.url && currentSoftware.url !== '#') {
+    dlLink.href = currentSoftware.url;
+    dlLink.setAttribute('download', currentSoftware.name);
+    setTimeout(() => { const a = document.createElement('a'); a.href = currentSoftware.url; a.download = currentSoftware.name; a.click(); }, 600);
+  } else { dlLink.href = '#'; }
+  openModal('successModal');
+  showToast('Payment verified! Ref: ' + response.reference);
+  // Log sale
+  db.collection('sales').add({
+    softwareId: currentSoftware.id, softwareName: currentSoftware.name,
+    amount: currentSoftware.price, ref: response.reference,
+    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+  }).catch(()=>{});
+}
+
+// ═══════════════════════════════════════════
+// ADMIN
+// ═══════════════════════════════════════════
+function openAdminLogin() {
+  if (isAdmin) { exitAdmin(); return; }
+  document.getElementById('admin-pass').value = '';
+  openModal('loginModal');
+}
+function checkAdmin() {
+  if (document.getElementById('admin-pass').value === ADMIN_PASSWORD) {
+    isAdmin = true; document.body.classList.add('admin-mode');
+    closeModal('loginModal'); showToast('Admin mode activated. 🔐');
+  } else { showToast('Incorrect password.', true); }
+}
+function exitAdmin() {
+  isAdmin = false; document.body.classList.remove('admin-mode');
+  showToast('Exited admin mode.');
+}
+
+function openAddModal() {
+  ['f-name','f-desc','f-ver','f-url'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('f-cat').value = '';
+  document.getElementById('f-price').value = '1.00';
+  document.getElementById('icon-name').style.display = 'none';
+  document.getElementById('drop-hint').style.display = '';
+  document.getElementById('icon-drop').classList.remove('has-file');
+  iconBase64 = null;
+  const btn = document.getElementById('add-btn');
+  btn.disabled = false;
+  btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16"><path d="M12 5v14M5 12h14"/></svg> Add to Store`;
+  openModal('addModal');
+}
+
+function handleIcon(input) {
+  if (!input.files[0]) return;
+  const file = input.files[0];
+  if (file.size > 600 * 1024) { showToast('Icon too large — max 500KB please.', true); return; }
+  const reader = new FileReader();
+  reader.onload = e => {
+    iconBase64 = e.target.result;
+    document.getElementById('icon-drop').classList.add('has-file');
+    document.getElementById('drop-hint').style.display = 'none';
+    const nm = document.getElementById('icon-name');
+    nm.textContent = '✓ ' + file.name; nm.style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+}
+
+async function addSoftware() {
+  const name  = document.getElementById('f-name').value.trim();
+  const cat   = document.getElementById('f-cat').value;
+  const desc  = document.getElementById('f-desc').value.trim();
+  const ver   = document.getElementById('f-ver').value.trim();
+  const price = parseFloat(document.getElementById('f-price').value) || 1.00;
+  const url   = document.getElementById('f-url').value.trim();
+  if (!name || !cat || !desc || !url) { showToast('Please fill all required fields.', true); return; }
+
+  const btn = document.getElementById('add-btn');
+  btn.disabled = true; btn.textContent = 'Saving to Firebase…';
+
+  try {
+    await db.collection('software').add({
+      name, cat, desc, version: ver, price, url,
+      iconBase64: iconBase64 || '',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    closeModal('addModal');
+    showToast(`"${name}" is now live in the store! ✨`);
+  } catch(e) {
+    showToast('Error saving: ' + e.message, true);
+    btn.disabled = false;
+    btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16"><path d="M12 5v14M5 12h14"/></svg> Add to Store`;
+  }
+}
+
+async function deleteSoftware(id, e) {
+  e.stopPropagation();
+  if (!confirm('Remove this software from the store?')) return;
+  try {
+    await db.collection('software').doc(id).delete();
+    showToast('Software removed.');
+  } catch(err) { showToast('Delete failed: ' + err.message, true); }
+}
+
+// ═══════════════════════════════════════════
+// MODAL HELPERS
+// ═══════════════════════════════════════════
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-backdrop').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
+});
+
+// ═══════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════
+let toastTimer;
+function showToast(msg, isError=false) {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = msg;
+  document.getElementById('toast-icon').textContent = isError ? '⚠' : '✓';
+  t.classList.toggle('error', isError);
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3500);
+}
+</script>
+</body>
+</html>
